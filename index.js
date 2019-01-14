@@ -9,8 +9,8 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
 
   console.log('sendFollowerNotification OK');
 
+  var quantity;
   const weight = change.after.val();
-  console.log('wight='+weight);
 
   // Notification details.
   const payload = {
@@ -19,6 +19,9 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
      body: `重さ：`+weight
   }
   };
+
+  //listの書き込み用ref
+  var listRef = admin.database().ref("/Post/list/");
 
   // 時間の取得のデータの書き込み
   var ref = admin.database().ref("/Post/");
@@ -31,7 +34,6 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   var hour = date.getHours();
   var minute = date.getMinutes();
   var time=year+"/"+month+"/"+day+" "+hour+":"+minute;
-  console.log("time="+time);
 
   ref.update({
     time : time
@@ -39,16 +41,68 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
 
   // quantityの数を+1する
   return admin.database().ref(`/Post/quantity`).once('value').then(snapshot => {
-  var quantity=snapshot.val()+1;
-  console.log("quantity="+quantity);
-  ref.update({
-    quantity : quantity
-  });
+    quantity=snapshot.val()+1;
 
+    ref.update({
+      quantity : quantity
+    });
+
+  //listを更新する
+  return admin.database().ref(`/Post/list/baggage1/`).once('value').then(snapshot => {
+    var weight1=snapshot.child("weight").val();
+    var time1=snapshot.child("time").val();
+
+    listRef.update({
+      baggage1 : {
+        time : time,
+        weight : weight
+      }
+    });
+  
+  return admin.database().ref(`/Post/list/baggage2/`).once('value').then(snapshot => {
+    var weight2=snapshot.child("weight").val();
+    var time2=snapshot.child("time").val();
+
+    listRef.update({
+      baggage2 : {
+        time : time1,
+        weight : weight1
+      }
+    });
+  
+  return admin.database().ref(`/Post/list/baggage3/`).once('value').then(snapshot => {
+    var weight3=snapshot.child("weight").val();
+    var time3=snapshot.child("time").val();
+
+    listRef.update({
+      baggage3 : {
+        time : time2,
+        weight : weight2
+      }
+    });
+
+  return admin.database().ref(`/Post/list/baggage4/`).once('value').then(snapshot => {
+    var weight4=snapshot.child("weight").val();
+    var time4=snapshot.child("time").val();
+  
+    listRef.update({
+      baggage4 : {
+        time : time3,
+        weight : weight3
+      }
+    });
+
+    listRef.update({
+      baggage5 : {
+        time : time4,
+        weight : weight4
+      }
+    });
+
+  
   // トークン取得
   return admin.database().ref(`/Users/token`).once('value').then(snapshot => {
     const token=snapshot.val();
-    console.log("token="+token);
   
   // 通知を送る
   return admin.messaging().sendToDevice(token, payload).then(response => {
@@ -56,6 +110,10 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   })
   .catch(error => {
     console.log('Failed to send notification');
+  })
+  })
+  })
+  })
   })
   })
   });
