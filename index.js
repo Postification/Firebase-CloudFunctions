@@ -100,16 +100,31 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
     });
 
   
-  // トークン取得
-  return admin.database().ref(`/Users/token`).once('value').then(snapshot => {
-    const token=snapshot.val();
+  // トークン1取得
+  return admin.database().ref(`/Users/token1`).once('value').then(snapshot => {
+    const token1=snapshot.val();
+    console.log(token1);
   
   // 通知を送る
-  return admin.messaging().sendToDevice(token, payload).then(response => {
-    console.log('Successfully sent notification');
+  return admin.messaging().sendToDevice(token1, payload).then(response => {
+    console.log('Successfully sent notification1');
+  
+  // トークン2取得
+  return admin.database().ref(`/Users/token2`).once('value').then(snapshot => {
+    const token2=snapshot.val();
+    console.log(token2);
+  
+  // 通知を送る
+  return admin.messaging().sendToDevice(token2, payload).then(response => {
+    console.log('Successfully sent notification2');
   })
   .catch(error => {
-    console.log('Failed to send notification');
+    console.log('Failed to send notification2');
+  })
+  })
+  })
+  .catch(error => {
+    console.log('Failed to send notification1');
   })
   })
   })
