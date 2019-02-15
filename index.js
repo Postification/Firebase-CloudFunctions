@@ -10,13 +10,16 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   console.log('sendFollowerNotification OK');
 
   var quantity;
-  const weight = change.after.val();
+  var time=new Array(10);
+  var weight=new Array(10);
+
+  weight[0] = change.after.val();
 
   // Notification details.
   const payload = {
   notification: {
      title: 'ポストに荷物が届きました',
-     body: `重さ：`+weight
+     body: `重さ：`+weight[0]
   }
   };
 
@@ -33,10 +36,10 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   var day = date.getDate();
   var hour = date.getHours();
   var minute = date.getMinutes();
-  var time=year+"/"+month+"/"+day+" "+hour+":"+minute;
+  time[0]=year+"/"+month+"/"+day+" "+hour+":"+minute;
 
   ref.update({
-    time : time
+    time : time[0]
   });
 
   // quantityの数を+1する
@@ -48,87 +51,73 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
     });
 
   //listを更新する
-  return admin.database().ref(`/Post/list/baggage1/`).once('value').then(snapshot => {
-    var weight1=snapshot.child("weight").val();
-    var time1=snapshot.child("time").val();
+  return admin.database().ref(`/Post/list/`).once('value').then(snapshot => {
+    var i;
+    var name
+
+    for(i=1;i<10;i++){
+      name="baggage"+String(i);
+      time[i]=snapshot.child(name).child("time").val();
+      weight[i]=snapshot.child(name).child("weight").val();
+    }
 
     listRef.update({
       baggage1 : {
-        time : time,
-        weight : weight
-      }
-    });
-  
-  return admin.database().ref(`/Post/list/baggage2/`).once('value').then(snapshot => {
-    var weight2=snapshot.child("weight").val();
-    var time2=snapshot.child("time").val();
-
-    listRef.update({
+        time : time[0],
+        weight : weight[0]
+      },
       baggage2 : {
-        time : time1,
-        weight : weight1
-      }
-    });
-  
-  return admin.database().ref(`/Post/list/baggage3/`).once('value').then(snapshot => {
-    var weight3=snapshot.child("weight").val();
-    var time3=snapshot.child("time").val();
-
-    listRef.update({
+        time : time[1],
+        weight : weight[1]
+      },
       baggage3 : {
-        time : time2,
-        weight : weight2
-      }
-    });
-
-  return admin.database().ref(`/Post/list/baggage4/`).once('value').then(snapshot => {
-    var weight4=snapshot.child("weight").val();
-    var time4=snapshot.child("time").val();
-  
-    listRef.update({
+        time : time[2],
+        weight : weight[2]
+      },
       baggage4 : {
-        time : time3,
-        weight : weight3
-      }
-    });
-
-    listRef.update({
+        time : time[3],
+        weight : weight[3]
+      },
       baggage5 : {
-        time : time4,
-        weight : weight4
+        time : time[4],
+        weight : weight[4]
+      },
+      baggage6 : {
+        time : time[5],
+        weight : weight[5]
+      },
+      baggage7 : {
+        time : time[6],
+        weight : weight[6]
+      },
+      baggage8 : {
+        time : time[7],
+        weight : weight[7]
+      },
+      baggage9 : {
+        time : time[8],
+        weight : weight[8]
+      },
+      baggage10 : {
+        time : time[9],
+        weight : weight[9]
       }
     });
+  
+  // トークン,送る対象を取得
+  return admin.database().ref(`/user/`).once('value').then(snapshot => {
+    var token=snapshot.child("user1").child("token").val();
+    var send=snapshot.child("user1").child("send").val();
 
-  
-  // トークン1取得
-  return admin.database().ref(`/Users/token1`).once('value').then(snapshot => {
-    const token1=snapshot.val();
-    console.log(token1);
-  
-  // 通知を送る
-  return admin.messaging().sendToDevice(token1, payload).then(response => {
-    console.log('Successfully sent notification1');
-  
-  // トークン2取得
-  return admin.database().ref(`/Users/token2`).once('value').then(snapshot => {
-    const token2=snapshot.val();
-    console.log(token2);
-  
-  // 通知を送る
-  return admin.messaging().sendToDevice(token2, payload).then(response => {
-    console.log('Successfully sent notification2');
-  })
-  .catch(error => {
-    console.log('Failed to send notification2');
-  })
-  })
-  })
-  .catch(error => {
-    console.log('Failed to send notification1');
-  })
-  })
-  })
-  })
+    if(send==1){
+      //通知を送る
+      return admin.messaging().sendToDevice(token, payload).then(response => {
+        console.log("Successfully sent notification");
+      })
+      .catch(error => {
+        console.log('Failed to send notification');
+      })
+    }
   })
   })
   });
