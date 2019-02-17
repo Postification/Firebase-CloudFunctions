@@ -21,8 +21,8 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   // Notification details.
   const payload = {
   notification: {
-     title: 'ポストに荷物が届きました',
-     body: `重さ：`+weight[0]
+     title: "ポストに荷物が届きました",
+     body: "重さ："+weight[0]+" [g]"
   }
   };
 
