@@ -12,6 +12,9 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   var quantity;
   var time=new Array(10);
   var weight=new Array(10);
+  var token=new Array(2);
+  var send=new Array(2);
+
 
   weight[0] = change.after.val();
 
@@ -106,16 +109,37 @@ exports.sendFollowerNotification = functions.database.ref('/Post/weight').onWrit
   
   // トークン,送る対象を取得
   return admin.database().ref(`/user/`).once('value').then(snapshot => {
-    var token=snapshot.child("user1").child("token").val();
-    var send=snapshot.child("user1").child("send").val();
+    var uname;
 
-    if(send==1){
+    for(i=0;i<2;i++){
+      uname="user"+String(i+1);
+      token[i]=snapshot.child(uname).child("token").val();
+      send[i]=snapshot.child(uname).child("send").val();
+    }
+
+    if(send[0]==1){
       //通知を送る
-      return admin.messaging().sendToDevice(token, payload).then(response => {
+      return admin.messaging().sendToDevice(token[0], payload).then(response => {
         console.log("Successfully sent notification");
+        if(send[1]==1){
+          return admin.messaging().sendToDevice(token[1], payload).then(response => {
+            console.log("Successfully sent notification");
+          })
+          .catch(error => {
+            console.log('Failed to send notification');
+          })
+        }
       })
       .catch(error => {
         console.log('Failed to send notification');
+        if(send[1]==1){
+          return admin.messaging().sendToDevice(token[1], payload).then(response => {
+            console.log("Successfully sent notification");
+          })
+          .catch(error => {
+            console.log('Failed to send notification');
+          })
+        }
       })
     }
   })
